@@ -21,11 +21,11 @@ function RootNavigator() {
   useEffect(() => {
     if (loading) return;
 
-    const inAuthGroup = segments[0] === "(tabs)";
+    const isLoginScreen = segments[0] === "login";
 
-    if (!user && inAuthGroup) {
+    if (!user && !isLoginScreen) {
       router.replace("/login");
-    } else if (user && !inAuthGroup) {
+    } else if (user && isLoginScreen) {
       router.replace("/(tabs)");
     }
   }, [user, loading, segments]);

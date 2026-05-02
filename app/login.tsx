@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,60 +6,53 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
-import * as Google from "expo-auth-session/providers/google";
-import * as AuthSession from "expo-auth-session";
-import * as WebBrowser from "expo-web-browser";
 import { useAuth } from "@/hooks/useAuth";
 import { Colors, Spacing, BorderRadius, FontSize } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
-WebBrowser.maybeCompleteAuthSession();
-
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const { signInWithGoogle, signInAsGuest } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const scheme = useColorScheme() ?? "light";
   const colors = Colors[scheme];
 
-  // Genera el redirect URI automáticamente
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: "catexpensemanager",
-  });
+  const handleSignIn = async () => {
+    setIsSigningIn(true);
+    try {
+      await signInWithGoogle();
+    } catch (error: any) {
+      // Si el usuario cancela el flujo, no mostrar error
+      if (error?.code === "SIGN_IN_CANCELLED") return;
+      // Si ya hay un sign-in en progreso, ignorar
+      if (error?.code === "SIGN_IN_IN_PROGRESS" || error?.code === "IN_PROGRESS") return;
 
-  // ⬇️ IMPORTANTE: Copia esta URI y agrégala en Google Cloud Console
-  //   → Credentials → Tu OAuth Client → Authorized redirect URIs
-  console.log("📋 Redirect URI (agregar en Google Cloud Console):", redirectUri);
-
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: "663856121853-qusn34lcqthknalabjslkdfcoiju96mu.apps.googleusercontent.com",
-    redirectUri,
-  });
-
-  useEffect(() => {
-    handleGoogleResponse();
-  }, [response]);
-
-  const handleGoogleResponse = async () => {
-    if (response?.type === "success") {
-      setIsSigningIn(true);
-      try {
-        const { id_token } = response.params;
-        await signIn(id_token);
-      } catch (error) {
-        Alert.alert("Error", "No se pudo iniciar sesión. Inténtalo de nuevo.");
-        console.error("Sign in error:", error);
-      } finally {
-        setIsSigningIn(false);
-      }
+      // Mostrar el error real para poder diagnosticar
+      const errorMessage = error?.message || "Error desconocido";
+      const errorCode = error?.code || "sin código";
+      console.error("❌ Sign in error:", JSON.stringify(error, null, 2));
+      Alert.alert(
+        "Error de inicio de sesión",
+        `${errorMessage}\n\nCódigo: ${errorCode}`
+      );
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
-  const handleSignIn = async () => {
+  const handleGuestSignIn = async () => {
+    setIsSigningIn(true);
     try {
-      await promptAsync();
-    } catch (error) {
-      Alert.alert("Error", "No se pudo abrir el inicio de sesión.");
+      await signInAsGuest();
+    } catch (error: any) {
+      console.error("❌ Guest sign in error:", JSON.stringify(error, null, 2));
+      Alert.alert(
+        "Error",
+        "No se pudo iniciar sesión como invitado. Verifica tu conexión a internet."
+      );
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
@@ -73,8 +66,11 @@ export default function LoginScreen() {
 
       {/* Logo area */}
       <View style={styles.logoArea}>
-        <View style={[styles.logoBg, { backgroundColor: colors.primaryLight }]}>
-          <Text style={styles.logoEmoji}>🐱</Text>
+        <View style={[styles.logoBg, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+          <Image 
+            source={require("../assets/images/logo.png")} 
+            style={{ width: 100, height: 100, borderRadius: 50, resizeMode: "cover" }} 
+          />
         </View>
         <Text style={[styles.appName, { color: colors.text }]}>
           Cat Expense
@@ -110,7 +106,7 @@ export default function LoginScreen() {
       <View style={styles.buttonArea}>
         <TouchableOpacity
           onPress={handleSignIn}
-          disabled={!request || isSigningIn}
+          disabled={isSigningIn}
           activeOpacity={0.8}
           style={[
             styles.googleButton,
@@ -118,6 +114,7 @@ export default function LoginScreen() {
               backgroundColor: colors.surface,
               borderColor: colors.border,
               shadowColor: colors.shadow,
+              marginBottom: Spacing.md,
             },
           ]}
         >
@@ -131,6 +128,24 @@ export default function LoginScreen() {
               </Text>
             </>
           )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleGuestSignIn}
+          disabled={isSigningIn}
+          activeOpacity={0.8}
+          style={[
+            styles.guestButton,
+            {
+              backgroundColor: "transparent",
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <Text style={styles.guestIcon}>👤</Text>
+          <Text style={[styles.guestText, { color: colors.textSecondary }]}>
+            Continuar como Invitado
+          </Text>
         </TouchableOpacity>
 
         <Text style={[styles.footerText, { color: colors.textTertiary }]}>
@@ -240,9 +255,27 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     fontWeight: "600",
   },
+  guestButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    width: "100%",
+  },
+  guestIcon: {
+    fontSize: 20,
+    marginRight: Spacing.sm,
+  },
+  guestText: {
+    fontSize: FontSize.md,
+    fontWeight: "600",
+  },
   footerText: {
     fontSize: FontSize.xs,
-    marginTop: Spacing.md,
+    marginTop: Spacing.lg,
   },
   decorBottom: {
     position: "absolute",

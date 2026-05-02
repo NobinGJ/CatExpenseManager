@@ -67,7 +67,8 @@ export default function AddExpenseScreen() {
 
     setSaving(true);
     try {
-      await add({
+      // Fire and forget, optimistic UI will show it immediately
+      add({
         titulo: titulo.trim(),
         monto: Number(monto),
         impuesto: Number(impuesto) || 0,

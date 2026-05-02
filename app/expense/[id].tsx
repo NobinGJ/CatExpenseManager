@@ -76,7 +76,7 @@ export default function EditExpenseScreen() {
 
     setSaving(true);
     try {
-      await update(id, {
+      update(id, {
         titulo: titulo.trim(),
         monto: Number(monto),
         impuesto: Number(impuesto) || 0,
@@ -103,9 +103,9 @@ export default function EditExpenseScreen() {
         {
           text: "Eliminar",
           style: "destructive",
-          onPress: async () => {
+          onPress: () => {
             try {
-              await remove(id);
+              remove(id);
               router.back();
             } catch (error) {
               Alert.alert("Error", "No se pudo eliminar el gasto.");

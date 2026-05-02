@@ -20,6 +20,7 @@ export function useExpenses() {
       setLoading(false);
       return;
     }
+    // We allow anonymous users to use Firestore normally using their temporary UID
 
     setLoading(true);
     const unsubscribe = subscribeToExpenses(user.uid, (data) => {

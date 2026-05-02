@@ -2,21 +2,24 @@ import React, { createContext, useState, useEffect, ReactNode } from "react";
 import { User } from "firebase/auth";
 import {
   subscribeToAuthState,
-  signInWithGoogle,
+  signInWithGoogle as googleSignIn,
+  signInAsGuest as guestSignIn,
   signOutUser,
 } from "@/services/authService";
 
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signIn: (idToken: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInAsGuest: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signIn: async () => {},
+  signInWithGoogle: async () => {},
+  signInAsGuest: async () => {},
   signOut: async () => {},
 });
 
@@ -32,8 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const signIn = async (idToken: string) => {
-    await signInWithGoogle(idToken);
+  const signInWithGoogle = async () => {
+    await googleSignIn();
+  };
+
+  const signInAsGuest = async () => {
+    await guestSignIn();
   };
 
   const signOut = async () => {
@@ -41,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInAsGuest, signOut }}>
       {children}
     </AuthContext.Provider>
   );

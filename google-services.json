@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "253041264602",
+    "project_id": "cat-expense-manager-c6da0",
+    "storage_bucket": "cat-expense-manager-c6da0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:253041264602:android:1ed52317dd77c5279722e3",
+        "android_client_info": {
+          "package_name": "com.nobing.CatExpenseManager"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "253041264602-rn6ndjck66ujkagf203r3necobsas3qc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCH19VXUeBQ7GNcl0Unv9vQH4A81iqrRBQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "253041264602-9hh1llor3cjmr2mbs5saoclnvjcnomro.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
